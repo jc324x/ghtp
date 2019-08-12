@@ -1,4 +1,15 @@
 {
-  "base": "~/tmpgis",
-  "repos": ["gis-Ahead"]
+  "path": "~/tmpgis",
+  "repos": [
+    "gis-Ahead",
+    "gis-Behind",
+    "gis-Dirty",
+    "gis-DirtyUntracked",
+    "gis-DirtyAhead",
+    "gis-DirtyBehind",
+    "gis-Untracked",
+    "gis-UntrackedAhead",
+    "gis-UntrackedBehind",
+    "gis-Complete"
+  ]
 }

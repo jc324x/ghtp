@@ -3,11 +3,13 @@ package ght
 
 import (
 	"bufio"
+	"bytes"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -126,6 +128,7 @@ func (m *model) hub() {
 }
 
 // create a new file markdown file with Lorem Ipsum
+// TODO: rename to createREADME
 func (m *model) create(name string) {
 	lorem := "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 	data := []byte(lorem)
@@ -136,6 +139,8 @@ func (m *model) create(name string) {
 		log.Fatal(err)
 	}
 }
+
+// TODO: createRandom()
 
 // git add *
 func (m *model) add() {
@@ -158,8 +163,31 @@ func (m *model) push() {
 	cmd.Run()
 }
 
-// Create temporary repos
-func createTempRepos(models models, cleanup cleanup) {
+// return a temp dir thing
+func (m *model) subdirectory() string {
+	buf := bytes.Buffer{}
+	dir := filepath.Dir(m.path)
+	buf.WriteString(dir)
+	buf.WriteString("/_")
+	buf.WriteString(m.name)
+	return buf.String()
+}
+
+func (m *model) behind() {
+
+	if !strings.Contains(m.name, "Behind") {
+		return
+	}
+
+	subd := m.subdirectory()                            // path to repo, prefixed with _
+	cmd := exec.Command("git", "clone", m.remote, subd) // auxiliary clone in _ dir
+	cmd.Run()
+	// now do a commit in the _ dir
+}
+
+// Create temporary repos on GitHub, return cleanup deletion function
+// TODO: actually write the cleanup function
+func createTempRepos(models models) (cleanup cleanup) {
 	var wg sync.WaitGroup
 	for i := range models {
 		wg.Add(1)
@@ -174,34 +202,35 @@ func createTempRepos(models models, cleanup cleanup) {
 			m.push()                   // git push -u origin master
 		}(models[i])
 	}
-	cleanup()
+	return func() {}
 }
 
-func cloneTempRepos(models models) {
-
+// Setting the status of a 'Behind' repo requires the creation and
+// staging of a second copy of the repo...
+func (models models) stage() {
 	var wg sync.WaitGroup
 	for i := range models {
 		wg.Add(1)
 		go func(m *model) {
 			defer wg.Done()
-			// m.clone()     // clone from GitHub
-			// m.behind()    // set *Behind* models behind origin master
-			// m.set(tdir)   // switch to tmpgis directory
-			// m.ahead()     // set *Ahead* models behind origin master
-			// m.untracked() // make *Untracked* models untracked
-			// m.dirty()     // make *Dirty* models dirty
+			m.behind()
+
 		}(models[i])
 	}
+}
+
+func (ms models) stageModels() {
 
 }
 
 // Temp ...
+// TODO: return 2 cleanup functions instead? handle in caller?
 func Temp(path string, names []string) {
-	username := readHubConfig()
-	cleanup := createTempDir(path)
-	models := createModels(username, path, names)
-	createTempRepos(models, cleanup)
-	cleanup = createTempDir(path)
-	// stageTempRepos(models) // use path for 'overflow' => extra behind
-	// cleanupTempDir = createTempDir(path)
+	username := readHubConfig()                   // read GitHub username or exit
+	tempDirCleanup := createTempDir(path)         // create temp directory
+	defer tempDirCleanup()                        // defer temp directory removal
+	models := createModels(username, path, names) // create models
+	tempRepoCleanup := createTempRepos(models)    // create GitHub repos for models
+	defer tempRepoCleanup()                       // defer temp repository cleanup
+	models.stage()                                // clone auxillary repos and stage them
 }

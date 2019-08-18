@@ -1,4 +1,4 @@
-// Package ght creates testable conditions in transient GitHub repos.
+// Package ght manages temporary GitHub repositories.
 package ght
 
 import (

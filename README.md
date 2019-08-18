@@ -1,9 +1,7 @@
-ght
+ghtp
 ===
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/jychri/ght)](https://goreportcard.com/report/github.com/jychri/ght) [![GoDoc](https://godoc.org/github.com/jychri/ght?status.svg)](https://godoc.org/github.com/jychri/ght)
-
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/jychri/ghtp)](https://goreportcard.com/report/github.com/jychri/ghtp) [![GoDoc](https://godoc.org/github.com/jychri/ghtp?status.svg)](https://godoc.org/github.com/jychri/ghtp)
 
 ## Projects ## 
 
